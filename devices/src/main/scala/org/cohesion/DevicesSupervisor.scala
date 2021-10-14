@@ -8,6 +8,9 @@ import akka.actor.typed.ActorRef
 import scala.concurrent.duration.FiniteDuration
 import akka.actor.Actor
 import concurrent.duration._
+import org.cohesion.service.DeviceService
+import org.cohesion.infrastructure.kafka.Publisher
+import akka.stream.Materializer
 
 object DevicesSupervisor {
 
@@ -25,10 +28,17 @@ object DevicesSupervisor {
       }
     }
 
-  def apply(): Behavior[DeviceActor.Command] = Behaviors.setup[DeviceActor.Command] { ctx =>
+  def apply(
+    service: DeviceService,
+    publisher: Publisher[String, String],
+  )(
+    implicit mat: Materializer
+  ): Behavior[DeviceActor.Command] = Behaviors.setup[DeviceActor.Command] { ctx =>
     val pool =
       Routers.pool(poolSize = 5) {
-        Behaviors.supervise(DeviceActor()).onFailure[Exception](SupervisorStrategy.restart)
+        Behaviors
+          .supervise(DeviceActor(service, publisher))
+          .onFailure[Exception](SupervisorStrategy.restart)
       }
 
     val poolWithBroadcast = pool.withBroadcastPredicate(

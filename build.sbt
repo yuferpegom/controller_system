@@ -1,8 +1,9 @@
 val commonSettings = Seq(
   scalaVersion := "2.13.6",
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-effect" % "3.2.9"
-  ),
+    "org.typelevel" %% "cats-effect" % "3.2.9",
+    "com.typesafe.akka" %% "akka-stream-kafka" % "2.1.1"
+  )
 )
 
 val devices = project.settings(
