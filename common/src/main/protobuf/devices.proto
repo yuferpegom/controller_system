@@ -1,0 +1,12 @@
+syntax = "proto3";
+package org.cohesion.infrastructure.model;
+
+import "google/protobuf/timestamp.proto";
+
+message DeviceReadingMessage {
+    string deviceId = 1;
+    float curentValue = 2;
+    string unit = 3;
+    google.protobuf.Timestamp timestamp = 4;
+    float version = 5;
+}

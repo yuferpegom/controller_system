@@ -1,10 +1,12 @@
 package org.cohesion.service
 
+import org.cohesion.model.AirMonitoring
 import org.cohesion.model.Device
 import org.cohesion.model.DeviceReading
-import java.time.LocalDateTime
 import org.cohesion.model.Thermostat
-import org.cohesion.model.AirMonitoring
+
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 trait DeviceService {
   def generateReading(device: Device): DeviceReading
@@ -18,16 +20,18 @@ final class DeviceServiceImpl extends DeviceService {
     deviceId = device.deviceId,
     curretnValue = randomGenerator.nextFloat(),
     unit = unit(device),
-    timestamp = LocalDateTime.now(),
+    timestamp = LocalDateTime.now(ZoneOffset.UTC),
     version = 1,
   )
 
-  private[service] def unit(device: Device): String = {
-      device match {
-          case _: Thermostat => "Farenheith"
-          case _: AirMonitoring => "AQI"
-          case _ => "Other"
-      }
-  }
+  private[service] def unit(device: Device): String =
+    device match {
+      case _: Thermostat =>
+        "Farenheith"
+      case _: AirMonitoring =>
+        "AQI"
+      case _ =>
+        "Other"
+    }
 
 }

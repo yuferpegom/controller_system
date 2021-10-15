@@ -2,15 +2,21 @@ package org.cohesion
 
 import akka.actor.typed.Behavior
 import akka.actor.typed.javadsl.Behaviors
-import org.cohesion.model.Device
-import java.util.UUID
-import java.time.LocalDateTime
-import org.cohesion.service.DeviceService
-import org.apache.kafka.clients.producer.ProducerRecord
-import akka.stream.scaladsl.Source
-import org.cohesion.model.Thermostat
-import org.cohesion.infrastructure.kafka.Publisher
 import akka.stream.Materializer
+import akka.stream.scaladsl.Source
+import cats.syntax.option._
+import com.google.protobuf.timestamp.Timestamp
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.serialization.ByteArraySerializer
+import org.cohesion.infrastructure.kafka.Publisher
+import org.cohesion.infrastructure.model.devices.DeviceReadingMessage
+import org.cohesion.model.Device
+import org.cohesion.model.Thermostat
+import org.cohesion.service.DeviceService
+
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.util.UUID
 
 object DeviceActor {
 
@@ -19,15 +25,29 @@ object DeviceActor {
 
   def apply(
     service: DeviceService,
-    producer: Publisher[String, String]
+    producer: Publisher[String, Array[Byte]],
   )(
     implicit mat: Materializer
   ): Behavior[Command] = Behaviors.receiveMessage { case GenerateReading() =>
-    val record = new ProducerRecord[String, String]("test", "value")
     val device = Thermostat()
     Source
       .single(service.generateReading(device))
-      .map(_ => record)
+      .map { deviceReading =>
+        val instant = deviceReading.timestamp.toInstant(ZoneOffset.UTC);
+        val timestamp = Timestamp.of(instant.getEpochSecond(), instant.getNano())
+
+        DeviceReadingMessage(
+          deviceReading.deviceId,
+          deviceReading.curretnValue,
+          deviceReading.unit,
+          timestamp.some,
+          deviceReading.version,
+        )
+
+      }
+      .map(message =>
+        new ProducerRecord[String, Array[Byte]]("device-reading", message.toByteArray)
+      )
       .runWith(producer.publish())
     println("I'm doing my job")
     Behaviors.same
