@@ -5,7 +5,7 @@ import slick.jdbc.JdbcProfile
 import org.cohesion.infrastructure.db.Database
 import org.cohesion.infrastructure.db.model.DeviceReadingDTO
 
-class DeviceReadingRepository(val config: DatabaseConfig[JdbcProfile]) extends Database {
+class DeviceReadingRepository() extends Database with DbConfiguration {
   import config.driver.api._
   import scala.concurrent.ExecutionContext.Implicits.global
 

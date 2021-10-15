@@ -1,3 +1,5 @@
+val akkaVersion = "2.6.16"
+
 val commonSettings = Seq(
   scalaVersion := "2.13.6",
   libraryDependencies ++= Seq(
@@ -8,11 +10,8 @@ val commonSettings = Seq(
       .Version
       .scalapbVersion % "protobuf",
     "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
-    "com.typesafe.akka" %% "akka-stream" % akkaVersion,
   ),
 )
-
-val akkaVersion = "2.6.16"
 
 val common = project.settings(
   commonSettings,
@@ -21,8 +20,12 @@ val common = project.settings(
   ),
 )
 
-val devices = project.settings(commonSettings).dependsOn(common)
+val devices = project
+  .settings(commonSettings)
+  .dependsOn(common)
+
 val slickVersion = "3.3.3"
+
 val devices_subscriber = project
   .settings(
     commonSettings,
@@ -31,6 +34,7 @@ val devices_subscriber = project
       "org.slf4j" % "slf4j-nop" % "1.6.4",
       "com.typesafe.slick" %% "slick-hikaricp" % slickVersion,
     ),
+    assembly / mainClass := Some("org.cohesion.boot.Boot"),
   )
   .dependsOn(common)
 
