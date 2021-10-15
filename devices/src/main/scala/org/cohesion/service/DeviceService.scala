@@ -41,7 +41,7 @@ final class DeviceServiceImpl extends DeviceService {
     }
 
   override def generateReadingSource(): Source[ProducerRecord[String, Array[Byte]], NotUsed] = {
-    val device = Thermostat() // TODO: issue created to generate random device readings
+    val device = Thermostat() // TODO: issue created to generate random device readings https://github.com/yuferpegom/controller_system/issues/1
     Source
       .single(generateReading(device))
       .map { deviceReading =>
