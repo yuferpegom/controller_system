@@ -1,26 +1,34 @@
 package org.cohesion.service
 
+import akka.Done
+import akka.kafka.scaladsl
+import akka.stream.Materializer
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Keep
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.cohesion.domain.DeviceReading
 import org.cohesion.infrastructure.kafka.Consumer
 import org.cohesion.infrastructure.model.devices.DeviceReadingMessage
 import org.cohesion.repository.DeviceSubscriberRepository
+
 import scala.concurrent.Future
-import akka.stream.scaladsl.Source
-import org.apache.kafka.clients.consumer.ConsumerRecord
-import akka.kafka.scaladsl
 
 trait DeviceSubscriberService {
-  def processReading(deviceReading: DeviceReading): Future[Int]
-  def consume(): Source[DeviceReading, scaladsl.Consumer.Control]
+  def consumeAndSave()(implicit mat: Materializer): Future[Done]
 
 }
 
-final class DeviceSubscriberServiceImpl(consumer: Consumer, repository: DeviceSubscriberRepository) extends DeviceSubscriberService {
+final class DeviceSubscriberServiceImpl(consumer: Consumer, repository: DeviceSubscriberRepository)
+  extends DeviceSubscriberService {
 
-  override def consume(): Source[DeviceReading, scaladsl.Consumer.Control] = consumer
+  def consumeAndSave()(implicit mat: Materializer) = consumer
     .consume()
     .map(record => DeviceReadingMessage.parseFrom(record.value()))
     .map(DeviceReading(_))
+    .runWith(processReading)
 
-  override def processReading(deviceReading: DeviceReading): Future[Int] = repository.save(deviceReading)
+  private[service] def processReading =
+    Flow[DeviceReading].mapAsync(1)(repository.save).toMat(Sink.ignore)(Keep.right)
 }

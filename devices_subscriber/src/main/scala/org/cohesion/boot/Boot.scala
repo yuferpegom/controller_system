@@ -15,6 +15,7 @@ import org.cohesion.infrastructure.db.DbConfiguration
 object Boot extends App {
   implicit val system = ActorSystem[Void](Behaviors.empty, "devices")
   val config = system.settings.config.getConfig("akka.kafka.producer")
+  implicit 
 
   val consumerSettings = ConsumerSettings(config, new StringDeserializer, new ByteArrayDeserializer)
     .withBootstrapServers("http://localhost:9092")
@@ -24,5 +25,6 @@ object Boot extends App {
   val consumer = new ConsumerImpl(consumerSettings)
   val repo = new DeviceSubscriberRepositoryImpl(new DeviceReadingRepository())
   val service = new DeviceSubscriberServiceImpl(consumer, repo)
+  service.consumeAndSave()
 
 }

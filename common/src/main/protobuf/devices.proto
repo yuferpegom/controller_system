@@ -5,7 +5,7 @@ import "google/protobuf/timestamp.proto";
 
 message DeviceReadingMessage {
     string deviceId = 1;
-    float curentValue = 2;
+    float curentValue = 2; // typo
     string unit = 3;
     google.protobuf.Timestamp timestamp = 4; // this should be required: https://github.com/yuferpegom/controller_system/issues/2
     float version = 5;

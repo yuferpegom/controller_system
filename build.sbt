@@ -10,6 +10,8 @@ val commonSettings = Seq(
       .Version
       .scalapbVersion % "protobuf",
     "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
+    "org.scalatest" %% "scalatest" % "3.2.10" % "test",
+    "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion,
   ),
 )
 
