@@ -7,6 +7,8 @@ val commonSettings = Seq(
       .compiler
       .Version
       .scalapbVersion % "protobuf",
+    "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
+    "com.typesafe.akka" %% "akka-stream" % akkaVersion,
   ),
 )
 
@@ -19,16 +21,17 @@ val common = project.settings(
   ),
 )
 
-val devices = project
+val devices = project.settings(commonSettings).dependsOn(common)
+val slickVersion = "3.3.3"
+val devices_subscriber = project
   .settings(
     commonSettings,
     libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
-      "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+      "com.typesafe.slick" %% "slick" % slickVersion,
+      "org.slf4j" % "slf4j-nop" % "1.6.4",
+      "com.typesafe.slick" %% "slick-hikaricp" % slickVersion,
     ),
   )
   .dependsOn(common)
-
-val devices_subscriber = project.settings(commonSettings)
 
 val root = project.in(file(".")).settings().aggregate(common, devices, devices_subscriber)
